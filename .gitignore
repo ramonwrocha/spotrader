@@ -1,0 +1,78 @@
+## Archivos de compilaci�n
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+[Ll]ogs/
+
+## Archivos de usuario de Visual Studio
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+## Archivos de Visual Studio Code
+.vscode/
+*.code-workspace
+
+## Archivos de dependencias y paquetes
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Si usas restore autom�tico, ignora los paquetes
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+## Archivos de Rider / JetBrains
+.idea/
+*.sln.iml
+
+## Archivos temporales
+*.tmp
+*.bak
+*.swp
+*~ 
+*.dbmdl
+*.jfm
+
+## Archivos generados por pruebas
+TestResult*/
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+## Archivos de Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+## Archivos de estilo/an�lisis
+*.editorconfig
+stylecop.json
+
+## Archivos de publish
+*.Publish.xml
+*.pubxml
+*.publishproj
+
+## Archivos secretos/config locales
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+## Archivos de sistema
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
