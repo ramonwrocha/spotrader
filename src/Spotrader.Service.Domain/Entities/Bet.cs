@@ -5,30 +5,43 @@ namespace Spotrader.Service.Domain.Entities;
 public sealed class Bet
 {
     public long Id { get; private set; }
-    
+
     public double Amount { get; private set; }
 
-    public double Multiplier { get; private set; }
+    public double Odds { get; private set; }
 
-    public long CustomerId { get; private set; }
+    public string? Client { get; private set; }
 
-    public long EventId { get; private set; }
+    public string? Event { get; private set; }
 
+    public string? Market { get; private set; }
+
+    public string? Selection { get; private set; }
+    
     public BetStatus Status { get; private set; }
 
-    private Bet() {}
+    private Bet() { }
 
-    public static Bet Create(long id, double amount, double multiplier, long customerId, long eventId)
+    public static Bet Create(
+        long id,
+        double amount,
+        double odds,
+        string client,
+        string @event,
+        string market,
+        string selection)
     {
-        ValidateBet(amount, multiplier);
+        ValidateBet(amount, odds, client, @event, market, selection);
 
         return new Bet
         {
             Id = id,
             Amount = amount,
-            CustomerId = customerId,
-            Multiplier = multiplier,
-            EventId = eventId,
+            Odds = odds,
+            Client = client,
+            Event = @event,
+            Market = market,
+            Selection = selection,
             Status = BetStatus.OPEN
         };
     }
@@ -36,7 +49,6 @@ public sealed class Bet
     public void UpdateStatus(BetStatus newStatus)
     {
         ValidateUpdateStatus(newStatus);
-
         Status = newStatus;
     }
 
@@ -44,23 +56,43 @@ public sealed class Bet
     {
         return Status switch
         {
-            BetStatus.WINNER => Amount * Multiplier,
+            BetStatus.WINNER => Amount * Odds,
             BetStatus.LOSER => -Amount,
-            BetStatus.REFUNDED => Amount,
+            BetStatus.VOID => 0,
             _ => 0
         };
     }
 
-    private static void ValidateBet(double amount, double multiplier)
+    private static void ValidateBet(double amount, double odds, string client, string @event, string market, string selection)
     {
         if (amount <= 0)
         {
             throw new InvalidOperationException("Bet amount must be greater than zero.");
         }
 
-        if (multiplier <= 1)
+        if (odds <= 1)
         {
-            throw new InvalidOperationException("Multiplier must be greater than one.");
+            throw new InvalidOperationException("Odds must be greater than one.");
+        }
+
+        if (string.IsNullOrEmpty(client))
+        {
+            throw new InvalidOperationException("Client cannot be null or empty.");
+        }
+
+        if (string.IsNullOrEmpty(@event))
+        {
+            throw new InvalidOperationException("Event cannot be null or empty.");
+        }
+
+        if (string.IsNullOrEmpty(market))
+        {
+            throw new InvalidOperationException("Market cannot be null or empty.");
+        }
+
+        if (string.IsNullOrEmpty(selection))
+        {
+            throw new InvalidOperationException("Selection cannot be null or empty.");
         }
     }
 
