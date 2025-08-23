@@ -6,7 +6,7 @@ using Spotrader.Service.Application.Workers;
 
 namespace Spotrader.Service.Application.Configuration;
 
-public static class AplicationConfiguration
+public static class AplicationModule
 {
     public static void RegisterApplicationModule(this IServiceCollection services, IConfiguration configuration)
     {

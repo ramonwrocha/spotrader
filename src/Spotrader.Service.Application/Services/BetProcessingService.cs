@@ -26,9 +26,9 @@ public class BetProcessingService : IBetProcessingService
         throw new NotImplementedException();
     }
 
-    public Task<string> GetSummaryAsync()
+    public async Task<string> GetSummaryAsync()
     {
-        throw new NotImplementedException();
+        return "";
     }
 
     public async Task ShutdownAsync()
@@ -58,14 +58,14 @@ public class BetProcessingService : IBetProcessingService
 
         if (random <= WinnerThreshold)
         {
-            return BetStatus.WINNER;            
+            return BetStatus.WINNER;
         }
 
         if (random <= LoserThreshold)
         {
-            return BetStatus.LOSER;            
+            return BetStatus.LOSER;
         }
-        
+
         return BetStatus.VOID;
     }
 }
