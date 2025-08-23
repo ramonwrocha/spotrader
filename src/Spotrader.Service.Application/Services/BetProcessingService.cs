@@ -8,14 +8,15 @@ namespace Spotrader.Service.Application.Services;
 public class BetProcessingService : IBetProcessingService
 {
     private readonly IBetRepository _betRepository;
-    private static int _totalBetsProcessed = 0;
+    private readonly CancellationTokenSource _shutdownTokenSource = new();
+    private static ulong _totalBetsProcessed = 0;
 
     public BetProcessingService(IBetRepository betRepository)
     {
         _betRepository = betRepository;
     }
 
-    public bool IsShuttingDown => throw new NotImplementedException();
+    public bool IsShuttingDown => _shutdownTokenSource.Token.IsCancellationRequested;
 
     public Task AddBetAsync(Bet bet)
     {
@@ -29,7 +30,8 @@ public class BetProcessingService : IBetProcessingService
 
     public Task ShutdownAsync()
     {
-        throw new NotImplementedException();
+        _shutdownTokenSource.Cancel();
+        return Task.CompletedTask;
     }
 
     public async Task ProcessBetAsync(Bet bet)
@@ -43,7 +45,7 @@ public class BetProcessingService : IBetProcessingService
 
         bet.UpdateStatus(SimulateRandomResult());
 
-        await _betRepository.SaveAsync(bet);
+        await _betRepository.AddAsync(bet);
 
         Interlocked.Increment(ref _totalBetsProcessed);
     }

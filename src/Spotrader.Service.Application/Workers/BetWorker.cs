@@ -28,29 +28,17 @@ public class BetWorker : BackgroundService
 
                 if (bet is not null)
                 {
-                    await ProcessBetAsync(bet);
+                    await _betProcessingService.ProcessBetAsync(bet);
                 }
             }
             catch (OperationCanceledException)
             {
                 break;
             }
-            catch (Exception ex)
+            catch
             {
                 await Task.Delay(1000, stoppingToken);
             }
-        }
-    }
-
-    private async Task ProcessBetAsync(Bet bet)
-    {
-        try
-        {
-            await _betProcessingService.ProcessBetAsync(bet);
-        }
-        catch (Exception ex)
-        {
-            throw;
         }
     }
 }

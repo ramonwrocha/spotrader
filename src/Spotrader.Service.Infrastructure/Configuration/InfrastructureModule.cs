@@ -3,7 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Spotrader.Service.Domain.Interfaces.Queue;
+using Spotrader.Service.Domain.Interfaces.Repositories;
 using Spotrader.Service.Infrastructure.Data;
+using Spotrader.Service.Infrastructure.Data.Repositories;
 using Spotrader.Service.Infrastructure.Messaging.Queues;
 
 namespace Spotrader.Service.Infrastructure.Configuration;
@@ -51,5 +53,8 @@ public static class InfrastructureModule
                     errorCodesToAdd: null);
             });
         });
+
+        services.AddScoped<IBetRepository, BetRepository>();
+
     }
 }

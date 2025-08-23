@@ -16,37 +16,26 @@ public sealed class BetRepository : IBetRepository
 
     public async Task<Bet?> GetByIdAsync(long id)
     {
-        var result = await _context.Bets
+        var entity = await _context.Bets
             .AsNoTracking()
             .FirstOrDefaultAsync(b => b.Id == id);
 
-        return result is null
-            ? null
-            : result.ToDomain();
+        return entity?.ToDomain();
     }
 
-    public async Task SaveAsync(Bet bet)
+    public async Task AddAsync(Bet bet)
     {
-        var existing = await _context.Bets.FirstOrDefaultAsync(b => b.Id == bet.Id);
-
-        if (existing is not null)
-        {
-            _context.Entry(existing).CurrentValues.SetValues(bet);
-        }
-        else
-        {
-            await _context.Bets.AddAsync(bet.ToEntity());
-        }
+        await _context.Bets.AddAsync(bet.ToEntity());
 
         await _context.SaveChangesAsync();
     }
 
     public async Task<List<Bet>> GetAllAsync()
     {
-        var result = await _context.Bets
+        var entities = await _context.Bets
             .AsNoTracking()
             .ToListAsync();
 
-        return result.Select(bet => bet.ToDomain()).ToList();
+        return entities.Select(bet => bet.ToDomain()).ToList();
     }
 }
