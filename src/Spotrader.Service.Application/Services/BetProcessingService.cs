@@ -11,6 +11,9 @@ public class BetProcessingService : IBetProcessingService
     private readonly CancellationTokenSource _shutdownTokenSource = new();
     private static ulong _totalBetsProcessed = 0;
 
+    private static readonly double WinnerThreshold = 0.45;
+    private static readonly double LoserThreshold = 0.90;
+
     public BetProcessingService(IBetRepository betRepository)
     {
         _betRepository = betRepository;
@@ -28,10 +31,9 @@ public class BetProcessingService : IBetProcessingService
         throw new NotImplementedException();
     }
 
-    public Task ShutdownAsync()
+    public async Task ShutdownAsync()
     {
-        _shutdownTokenSource.Cancel();
-        return Task.CompletedTask;
+        await _shutdownTokenSource.CancelAsync();
     }
 
     public async Task ProcessBetAsync(Bet bet)
@@ -54,12 +56,12 @@ public class BetProcessingService : IBetProcessingService
     {
         var random = Random.Shared.NextDouble();
 
-        if (random <= 0.45)
+        if (random <= WinnerThreshold)
         {
             return BetStatus.WINNER;            
         }
 
-        if (random <= 0.90)
+        if (random <= LoserThreshold)
         {
             return BetStatus.LOSER;            
         }
