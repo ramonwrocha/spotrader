@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Spotrader.Service.Domain\Spotrader.Service.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

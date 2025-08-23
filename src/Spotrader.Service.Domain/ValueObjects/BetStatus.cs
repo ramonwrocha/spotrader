@@ -5,5 +5,5 @@ public enum BetStatus
     OPEN,
     WINNER,
     LOSER,
-    REFUNDED
+    VOID
 }

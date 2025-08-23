@@ -4,11 +4,23 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>spotrader-service-api-12345</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.OpenApi" Version="2.1.0" />
+		<Folder Include="Controllers\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Spotrader.Service.Infrastructure\Spotrader.Service.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>

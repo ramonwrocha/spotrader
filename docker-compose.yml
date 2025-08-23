@@ -1,0 +1,67 @@
+services:
+  spotrader-service:
+    build:
+      context: .
+      dockerfile: src/Spotrader.Service.Api/Dockerfile
+    container_name: spotrader-service
+    restart: unless-stopped
+    ports:
+      - "7100:80"
+      - "7101:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80;https://+:443
+      - PostgreSql__Host=postgres
+      - PostgreSql__Port=5432
+      - PostgreSql__Database=spotrader
+      - PostgreSql__Username=spotrader
+      - PostgreSql__Password=spotrader
+      - PathBase=/
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    networks:
+      - spotrader-service-network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=spotrader
+      - POSTGRES_USER=spotrader
+      - POSTGRES_PASSWORD=spotrader
+    ports:
+      - "5432:5432"
+    networks:
+      - spotrader-service-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spotrader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+    ports:
+      - "7200:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - spotrader-service-network
+
+networks:
+  spotrader-service-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

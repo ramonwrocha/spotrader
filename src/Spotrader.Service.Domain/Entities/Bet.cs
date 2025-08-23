@@ -10,20 +10,19 @@ public sealed class Bet
 
     public double Odds { get; private set; }
 
-    public string? Client { get; private set; }
+    public string Client { get; private set; }
 
-    public string? Event { get; private set; }
+    public string Event { get; private set; }
 
-    public string? Market { get; private set; }
+    public string Market { get; private set; }
 
-    public string? Selection { get; private set; }
-    
+    public string Selection { get; private set; }
+
     public BetStatus Status { get; private set; }
 
     private Bet() { }
 
     public static Bet Create(
-        long id,
         double amount,
         double odds,
         string client,
@@ -35,7 +34,6 @@ public sealed class Bet
 
         return new Bet
         {
-            Id = id,
             Amount = amount,
             Odds = odds,
             Client = client,
@@ -43,6 +41,29 @@ public sealed class Bet
             Market = market,
             Selection = selection,
             Status = BetStatus.OPEN
+        };
+    }
+
+    public static Bet Read(
+        long id,
+        double amount,
+        double odds,
+        string client,
+        string @event,
+        string market,
+        BetStatus status,
+        string selection)
+    {
+        return new Bet
+        {
+            Id = id,
+            Amount = amount,
+            Odds = odds,
+            Client = client,
+            Event = @event,
+            Market = market,
+            Selection = selection,
+            Status = status
         };
     }
 
