@@ -20,6 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Spotrader.Service.Application\Spotrader.Service.Application.csproj" />
 		<ProjectReference Include="..\Spotrader.Service.Infrastructure\Spotrader.Service.Infrastructure.csproj" />
 	</ItemGroup>
 

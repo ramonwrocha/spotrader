@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Spotrader.Service.Domain.Entities;
-using Spotrader.Service.Domain.Interfaces;
+using Spotrader.Service.Domain.Interfaces.Repositories;
 using Spotrader.Service.Infrastructure.Data.Mappers;
 
 namespace Spotrader.Service.Infrastructure.Data.Repositories;

@@ -1,6 +1,6 @@
 ﻿using Spotrader.Service.Domain.Entities;
 
-namespace Spotrader.Service.Domain.Interfaces;
+namespace Spotrader.Service.Domain.Interfaces.Repositories;
 
 public interface IBetRepository
 {

@@ -77,7 +77,7 @@ public sealed class Bet
     {
         return Status switch
         {
-            BetStatus.WINNER => Amount * Odds,
+            BetStatus.WINNER => Amount * (Odds - 1),
             BetStatus.LOSER => -Amount,
             BetStatus.VOID => 0,
             _ => 0

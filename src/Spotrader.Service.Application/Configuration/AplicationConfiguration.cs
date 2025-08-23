@@ -1,0 +1,16 @@
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Spotrader.Service.Application.Interfaces;
+using Spotrader.Service.Application.Services;
+using Spotrader.Service.Application.Workers;
+
+namespace Spotrader.Service.Application.Configuration;
+
+public static class AplicationConfiguration
+{
+    public static void RegisterApplicationModule(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHostedService<BetWorker>();
+        services.AddScoped<IBetProcessingService, BetProcessingService>();
+    }
+}
