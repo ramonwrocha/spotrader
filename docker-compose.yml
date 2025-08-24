@@ -1,42 +1,45 @@
+version: '3.8'
+
 services:
-  sportradar-api:
-     build:
-       context: .
-       dockerfile: src/Spotrader.Service.Api/Dockerfile
-     container_name: spotrader-api
-     restart: unless-stopped
-     ports:
-       - "7100:80"
-       - "7101:443"
-     environment:
-       - ASPNETCORE_ENVIRONMENT=Development
-       - ASPNETCORE_URLS=http://+:80;https://+:443
-       - PathBase=/
-     depends_on:
-       postgres:
-         condition: service_healthy
-     networks:
-       - sportradar-service-network    
+  spotrader-api:
+    build:
+      context: .
+      dockerfile: src/Spotrader.Service.Api/Dockerfile
+    container_name: spotrader-api
+    restart: unless-stopped
+    ports:
+      - "7100:80"
+      - "7101:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80;https://+:443
+      - PathBase=/
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - spotrader-service-network
 
   postgres:
-    image: postgres:latest
-    container_name: sportradar
+    image: postgres:15
+    container_name: postgres
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=sportradar
-      - POSTGRES_USER=sportradar
-      - POSTGRES_PASSWORD=sportradar
+      - POSTGRES_DB=spotrader
+      - POSTGRES_USER=spotrader
+      - POSTGRES_PASSWORD=spotrader
     ports:
       - "5432:5432"
     networks:
-      - sportradar-service-network
+      - spotrader-service-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sportradar"]
+      test: ["CMD-SHELL", "pg_isready -U spotrader -d spotrader"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 20s
 
   pgadmin:
     image: dpage/pgadmin4
@@ -51,10 +54,10 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - sportradar-service-network
+      - spotrader-service-network
 
 networks:
-  sportradar-service-network:
+  spotrader-service-network:
     driver: bridge
 
 volumes:

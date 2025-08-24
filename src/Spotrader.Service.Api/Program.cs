@@ -1,5 +1,4 @@
 using Spotrader.Service.Api.DependencyInjection;
-using Spotrader.Service.Api.Workers;
 using Spotrader.Service.Infrastructure.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
