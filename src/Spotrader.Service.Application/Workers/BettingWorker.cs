@@ -1,9 +1,11 @@
 using Microsoft.Extensions.Hosting;
 using Spotrader.Service.Api.Services;
 using Spotrader.Service.Application.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Spotrader.Service.Application.Workers;
 
+[ExcludeFromCodeCoverage]
 public class BettingWorker : BackgroundService
 {
     private readonly IBetChannelService _channelService;
@@ -11,7 +13,7 @@ public class BettingWorker : BackgroundService
     private readonly DataSeedingService _dataSeedingService;
 
     public BettingWorker(
-        IBetChannelService betChannelService, 
+        IBetChannelService betChannelService,
         IBetProcessingService betProcessingService,
         DataSeedingService dataSeedingService)
     {
@@ -34,11 +36,6 @@ public class BettingWorker : BackgroundService
     {
         await foreach (var bet in _channelService.Reader.ReadAllAsync(stoppingToken))
         {
-            if (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-
             await _betProcessingService.ProcessBetAsync(bet);
         }
     }
@@ -47,11 +44,6 @@ public class BettingWorker : BackgroundService
     {
         await foreach (var bets in _channelService.BatchReader.ReadAllAsync(stoppingToken))
         {
-            if (stoppingToken.IsCancellationRequested)
-            {
-                break;
-            }
-
             await _betProcessingService.ProcessBetBatchAsync(bets);
         }
     }

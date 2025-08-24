@@ -1,12 +1,12 @@
-using System.Threading.Channels;
 using Spotrader.Service.Application.Interfaces;
 using Spotrader.Service.Domain.Entities;
+using System.Threading.Channels;
 
 namespace Spotrader.Service.Application.Services;
 
 public class BetChannelService : IBetChannelService
 {
-    private readonly Channel<Bet> _singleChannel;   
+    private readonly Channel<Bet> _singleChannel;
     private readonly Channel<IEnumerable<Bet>> _batchChannel;
 
     private readonly ChannelWriter<Bet> _writer;
@@ -19,11 +19,11 @@ public class BetChannelService : IBetChannelService
             SingleWriter = false,
             AllowSynchronousContinuations = true
         };
-        
+
         _singleChannel = Channel.CreateBounded<Bet>(options);
         _writer = _singleChannel.Writer;
-        
-        _batchChannel = Channel.CreateBounded<IEnumerable<Bet>>(options); 
+
+        _batchChannel = Channel.CreateBounded<IEnumerable<Bet>>(options);
     }
 
     public ChannelReader<Bet> Reader => _singleChannel.Reader;

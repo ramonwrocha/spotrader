@@ -6,7 +6,6 @@ using Spotrader.Service.Application.Interfaces;
 using Spotrader.Service.Domain.Entities;
 using Spotrader.Service.Domain.Interfaces.Repositories;
 using Spotrader.Service.Domain.ValueObjects;
-using System.Text;
 
 namespace Spotrader.Service.Application.Services;
 
@@ -33,7 +32,7 @@ public class BetProcessingService : IBetProcessingService
     public async Task AddBetAsync(Bet bet)
     {
         ArgumentNullException.ThrowIfNull(bet);
-        
+
         await _channelService.PublishAsync(bet);
     }
 
@@ -114,6 +113,4 @@ public class BetProcessingService : IBetProcessingService
 
         return BetStatus.VOID;
     }
-
-    
 }

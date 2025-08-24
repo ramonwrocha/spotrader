@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Spotrader.Service.Application.DTOs;
 using Spotrader.Service.Application.Interfaces;
-using Spotrader.Service.Application.Services;
 using Spotrader.Service.Domain.Entities;
 
 namespace Spotrader.Service.Api.Controllers;
@@ -33,7 +32,7 @@ public class BetsController : ControllerBase
         return Ok();
     }
 
-    [HttpGet("summary")]
+    [HttpGet("Summary")]
     public async Task<IActionResult> GetSummary()
     {
         var summary = await _betProcessingService.GetSummaryAsync();

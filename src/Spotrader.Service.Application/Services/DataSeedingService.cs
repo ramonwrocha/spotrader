@@ -2,9 +2,11 @@ using Microsoft.Extensions.Options;
 using Spotrader.Service.Application.Configuration;
 using Spotrader.Service.Application.Interfaces;
 using Spotrader.Service.Domain.Entities;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Spotrader.Service.Api.Services;
 
+[ExcludeFromCodeCoverage]
 public class DataSeedingService
 {
     private readonly IBetProcessingService _betProcessingService;
@@ -46,7 +48,7 @@ public class DataSeedingService
         var optimalThreads = OptimalThreadsCount();
 
         using var semaphore = new SemaphoreSlim(optimalThreads, optimalThreads);
-        
+
         var tasks = batches.Select(async (batch, batchIndex) =>
         {
             await semaphore.WaitAsync();

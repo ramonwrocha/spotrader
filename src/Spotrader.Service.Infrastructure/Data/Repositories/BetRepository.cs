@@ -3,11 +3,12 @@ using Spotrader.Service.Domain.DTOs;
 using Spotrader.Service.Domain.Entities;
 using Spotrader.Service.Domain.Interfaces.Repositories;
 using Spotrader.Service.Domain.ValueObjects;
-using Spotrader.Service.Infrastructure.Data.Extensions;
 using Spotrader.Service.Infrastructure.Data.Mappers;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Spotrader.Service.Infrastructure.Data.Repositories;
 
+[ExcludeFromCodeCoverage]
 public sealed class BetRepository : IBetRepository
 {
     private readonly IDbContextFactory<SpotraderDbContext> _contextFactory;
@@ -75,7 +76,7 @@ public sealed class BetRepository : IBetRepository
     public async Task<List<ClientProfitDto>> GetTopClientsWithProfitsAsync(int take = 5)
     {
         var clientProfits = await GetClientProfitsAsync();
-        
+
         return clientProfits
             .Where(x => x.Profit > 0)
             .OrderByDescending(x => x.Profit)
@@ -86,7 +87,7 @@ public sealed class BetRepository : IBetRepository
     public async Task<List<ClientLossDto>> GetTopClientsWithLossesAsync(int take = 5)
     {
         var clientProfits = await GetClientProfitsAsync();
-        
+
         return clientProfits
             .Where(x => x.Profit < 0)
             .Select(x => new ClientLossDto { Client = x.Client, Loss = x.Profit })
@@ -104,7 +105,7 @@ public sealed class BetRepository : IBetRepository
             _ => 0m
         };
     }
-    
+
     private async Task<List<ClientProfitDto>> GetClientProfitsAsync()
     {
         using var context = await _contextFactory.CreateDbContextAsync();

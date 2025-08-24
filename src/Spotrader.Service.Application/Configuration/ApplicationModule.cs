@@ -26,10 +26,10 @@ public static class ApplicationModule
 
     private static IServiceCollection RegisterSettings(this IServiceCollection services)
     {
-         services.AddOptions<ApplicationSettings>()
-            .BindConfiguration(ApplicationSettings.SectionName)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        services.AddOptions<ApplicationSettings>()
+           .BindConfiguration(ApplicationSettings.SectionName)
+           .ValidateDataAnnotations()
+           .ValidateOnStart();
 
         return services;
     }

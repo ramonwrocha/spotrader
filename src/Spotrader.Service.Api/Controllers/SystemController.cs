@@ -23,7 +23,7 @@ public class SystemController : ControllerBase
         _betProcessingService = betProcessingService;
     }
 
-    [HttpPost("seed-data-bets")]
+    [HttpPost("SeedDataBets")]
     public async Task<IActionResult> SeedData([FromQuery] SeedBetsParams param)
     {
         await _dataSeedingService.SeedInitialBetsAsync(totalBets: param.TotalBets);
@@ -31,7 +31,7 @@ public class SystemController : ControllerBase
         return Ok(new { Message = $"Successfully seeded {param.TotalBets} initial bets" });
     }
 
-    [HttpPost("shutdown")]
+    [HttpPost("Shutdown")]
     public IActionResult ShutdownSystem()
     {
         _betProcessingService.CompleteProcessingAsync();

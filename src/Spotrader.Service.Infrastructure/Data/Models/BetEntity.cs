@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Spotrader.Service.Domain.ValueObjects;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Spotrader.Service.Domain.ValueObjects;
 
 namespace Spotrader.Service.Infrastructure.Data.Models;
 
