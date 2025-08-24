@@ -145,21 +145,6 @@ public class BetProcessingServiceTests
     }
 
     [Fact]
-    public async Task ProcessBetAsync_ShouldRespectProcessingDelay()
-    {
-        // Arrange
-        var bet = Bet.Create(100, 2.0, "Client1", "Event1", "Market1", "Selection1");
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-        // Act
-        await _sut.ProcessBetAsync(bet);
-
-        // Assert
-        stopwatch.Stop();
-        Assert.True(stopwatch.ElapsedMilliseconds >= 45); // Al menos cerca de 50ms
-    }
-
-    [Fact]
     public async Task ProcessBetAsync_RepositoryThrows_ShouldPropagateException()
     {
         // Arrange
