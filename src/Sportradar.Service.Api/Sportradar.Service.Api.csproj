@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>sportradar-service-api-12345</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Folder Include="Controllers\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Sportradar.Service.Application\Sportradar.Service.Application.csproj" />
+	  <ProjectReference Include="..\Sportradar.Service.Domain\Sportradar.Service.Domain.csproj" />
+	  <ProjectReference Include="..\Sportradar.Service.Infrastructure\Sportradar.Service.Infrastructure.csproj" />
+	</ItemGroup>
+
+</Project>

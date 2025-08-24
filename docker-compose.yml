@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  spotrader-api:
+  sportradar-api:
     build:
       context: .
-      dockerfile: src/Spotrader.Service.Api/Dockerfile
-    container_name: spotrader-api
+      dockerfile: src/Sportradar.Service.Api/Dockerfile
+    container_name: sportradar-api
     restart: unless-stopped
     ports:
       - "7100:80"
@@ -18,24 +18,24 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - spotrader-service-network
+      - sportradar-service-network
 
   postgres:
     image: postgres:15
     container_name: postgres
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=spotrader
-      - POSTGRES_USER=spotrader
-      - POSTGRES_PASSWORD=spotrader
+      - POSTGRES_DB=sportradar
+      - POSTGRES_USER=sportradar
+      - POSTGRES_PASSWORD=sportradar
     ports:
       - "5432:5432"
     networks:
-      - spotrader-service-network
+      - sportradar-service-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U spotrader -d spotrader"]
+      test: ["CMD-SHELL", "pg_isready -U sportradar -d sportradar"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -54,10 +54,10 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - spotrader-service-network
+      - sportradar-service-network
 
 networks:
-  spotrader-service-network:
+  sportradar-service-network:
     driver: bridge
 
 volumes:

@@ -1,5 +1,5 @@
 services:
-  spotrader-api:
+  sportradar-api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     volumes:

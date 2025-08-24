@@ -5,7 +5,7 @@
         <DockerTargetOS>Linux</DockerTargetOS>
         <ProjectGuid>dcf2c2db-3dcf-4e8d-8a7e-b3c4b7b7b7b7</ProjectGuid>
         <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
-        <DockerServiceName>spotrader-api</DockerServiceName>
+        <DockerServiceName>sportradar-api</DockerServiceName>
         <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
     </PropertyGroup>
     <ItemGroup>
