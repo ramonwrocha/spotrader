@@ -38,7 +38,7 @@ public class BetProcessingService : IBetProcessingService
         await _channelService.PublishBatchAsync(bets);
     }
 
-    public async Task ProcessBetAsync(Bet bet)
+    public async Task ProcessBetAsync(Bet bet, CancellationToken cancellationToken)
     {
         if (bet.Status != BetStatus.OPEN)
         {
@@ -49,10 +49,10 @@ public class BetProcessingService : IBetProcessingService
 
         bet.UpdateStatus(SimulateRandomResult());
 
-        await _betRepository.AddAsync(bet);
+        await _betRepository.AddAsync(bet, cancellationToken);
     }
 
-    public async Task ProcessBetBatchAsync(IEnumerable<Bet> bets)
+    public async Task ProcessBetBatchAsync(IEnumerable<Bet> bets, CancellationToken cancellationToken)
     {
         var processedBets = new List<Bet>(capacity: _settings.MaxBetBatchSize);
 
@@ -72,7 +72,7 @@ public class BetProcessingService : IBetProcessingService
 
         if (processedBets.Any())
         {
-            await _betRepository.AddRangeAsync(processedBets);
+            await _betRepository.AddRangeAsync(processedBets, cancellationToken);
         }
     }
 

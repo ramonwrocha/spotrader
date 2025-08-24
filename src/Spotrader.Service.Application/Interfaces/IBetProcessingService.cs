@@ -9,9 +9,9 @@ public interface IBetProcessingService
 
     Task AddBetBatchAsync(IEnumerable<Bet> bets);
 
-    Task ProcessBetAsync(Bet bet);
+    Task ProcessBetAsync(Bet bet, CancellationToken cancellationToken);
 
-    Task ProcessBetBatchAsync(IEnumerable<Bet> bets);
+    Task ProcessBetBatchAsync(IEnumerable<Bet> bets, CancellationToken cancellationToken);
 
     Task<BetSummary> GetSummaryAsync();
 

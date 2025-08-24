@@ -13,17 +13,17 @@ public class BetChannelService : IBetChannelService
 
     public BetChannelService()
     {
-        var options = new UnboundedChannelOptions
+        var options = new BoundedChannelOptions(50_000)
         {
-            SingleReader = false,
+            SingleReader = true,
             SingleWriter = false,
-            AllowSynchronousContinuations = false
+            AllowSynchronousContinuations = true
         };
         
-        _singleChannel = Channel.CreateUnbounded<Bet>(options);
+        _singleChannel = Channel.CreateBounded<Bet>(options);
         _writer = _singleChannel.Writer;
         
-        _batchChannel = Channel.CreateUnbounded<IEnumerable<Bet>>(options); 
+        _batchChannel = Channel.CreateBounded<IEnumerable<Bet>>(options); 
     }
 
     public ChannelReader<Bet> Reader => _singleChannel.Reader;

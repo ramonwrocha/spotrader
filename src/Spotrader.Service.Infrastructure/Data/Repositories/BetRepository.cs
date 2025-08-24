@@ -24,21 +24,21 @@ public sealed class BetRepository : IBetRepository
         return entity?.ToDomain();
     }
 
-    public async Task AddAsync(Bet bet)
+    public async Task AddAsync(Bet bet, CancellationToken cancellationToken)
     {
         using var context = await _contextFactory.CreateDbContextAsync();
-        await context.Bets.AddAsync(bet.ToEntity());
+        await context.Bets.AddAsync(bet.ToEntity(), cancellationToken);
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task AddRangeAsync(IEnumerable<Bet> bets)
+    public async Task AddRangeAsync(IEnumerable<Bet> bets, CancellationToken cancellationToken)
     {
         using var context = await _contextFactory.CreateDbContextAsync();
 
-        await context.Bets.AddRangeAsync(bets.Select(bet => bet.ToEntity()));
-        
-        await context.SaveChangesAsync();
+        await context.Bets.AddRangeAsync(bets.Select(bet => bet.ToEntity()), cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<BasicStatsDto> GetBasicStatsAsync()

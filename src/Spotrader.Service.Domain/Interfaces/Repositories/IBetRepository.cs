@@ -7,9 +7,9 @@ public interface IBetRepository
 {
     Task<Bet?> GetByIdAsync(long id);
 
-    Task AddAsync(Bet bet);
+    Task AddAsync(Bet bet, CancellationToken cancellationToken);
 
-    Task AddRangeAsync(IEnumerable<Bet> bets);
+    Task AddRangeAsync(IEnumerable<Bet> bets, CancellationToken cancellationToken);
 
     Task<BasicStatsDto> GetBasicStatsAsync();
 

@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Options;
+using Spotrader.Service.Application.Configuration;
 using Spotrader.Service.Application.Interfaces;
 using Spotrader.Service.Domain.Entities;
 
@@ -6,16 +8,17 @@ namespace Spotrader.Service.Api.Services;
 public class DataSeedingService
 {
     private readonly IBetProcessingService _betProcessingService;
-
-    private readonly int _batchSize = 1_000;
     private readonly int _threadsPerCpu = 2; // cantidad recomendado por MS
     private readonly int _minimalAmount = 100;
     private readonly int _maxThreadsCount = 30;
     private readonly int _maxBets = 5_000_000;
 
-    public DataSeedingService(IBetProcessingService betProcessingService)
+    private readonly ApplicationSettings _appSettings;
+
+    public DataSeedingService(IBetProcessingService betProcessingService, IOptions<ApplicationSettings> appSettings)
     {
         _betProcessingService = betProcessingService;
+        _appSettings = appSettings.Value;
     }
 
     public async Task SeedInitialBetsAsync(long totalBets)
@@ -36,7 +39,7 @@ public class DataSeedingService
 
         var batches = bets
             .Select((bet, index) => new { bet, index })
-            .GroupBy(x => x.index / _batchSize)
+            .GroupBy(x => x.index / _appSettings.MaxBetBatchSize)
             .Select(g => g.Select(x => x.bet).ToList())
             .ToList();
 

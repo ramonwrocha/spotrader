@@ -26,7 +26,12 @@ public class BettingWorker : BackgroundService
     {
         await foreach (var bet in _channelService.Reader.ReadAllAsync(stoppingToken))
         {
-            await _betProcessingService.ProcessBetAsync(bet);
+            if (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+
+            await _betProcessingService.ProcessBetAsync(bet, stoppingToken);
         }
     }
 
@@ -34,7 +39,12 @@ public class BettingWorker : BackgroundService
     {
         await foreach (var bets in _channelService.BatchReader.ReadAllAsync(stoppingToken))
         {
-            await _betProcessingService.ProcessBetBatchAsync(bets);
+            if (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+
+            await _betProcessingService.ProcessBetBatchAsync(bets, stoppingToken);
         }
     }
 }
