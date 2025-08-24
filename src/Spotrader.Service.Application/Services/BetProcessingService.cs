@@ -1,39 +1,32 @@
-﻿using Spotrader.Service.Application.Interfaces;
+﻿using Spotrader.Service.Application.DTOs;
+using Spotrader.Service.Application.Interfaces;
 using Spotrader.Service.Domain.Entities;
 using Spotrader.Service.Domain.Interfaces.Repositories;
 using Spotrader.Service.Domain.ValueObjects;
 
 namespace Spotrader.Service.Application.Services;
 
-public class BetProcessingService : IBetProcessingService
+public class BetProcessingService
 {
     private readonly IBetRepository _betRepository;
-    private readonly CancellationTokenSource _shutdownTokenSource = new();
-    private static ulong _totalBetsProcessed = 0;
-
+    private readonly IBetChannelService _channelService;
     private static readonly double WinnerThreshold = 0.45;
     private static readonly double LoserThreshold = 0.90;
 
-    public BetProcessingService(IBetRepository betRepository)
+    public BetProcessingService(
+        IBetRepository betRepository,
+        IBetChannelService channelService)
     {
         _betRepository = betRepository;
+        _channelService = channelService;
     }
 
-    public bool IsShuttingDown => _shutdownTokenSource.Token.IsCancellationRequested;
-
-    public Task AddBetAsync(Bet bet)
+    public async Task AddBetAsync(Bet bet)
     {
-        throw new NotImplementedException();
-    }
-
-    public async Task<string> GetSummaryAsync()
-    {
-        return "";
-    }
-
-    public async Task ShutdownAsync()
-    {
-        await _shutdownTokenSource.CancelAsync();
+        ArgumentNullException.ThrowIfNull(bet);
+        
+        // Enqueue bet for background processing
+        await _channelService.EnqueueAsync(bet);
     }
 
     public async Task ProcessBetAsync(Bet bet)
@@ -43,13 +36,44 @@ public class BetProcessingService : IBetProcessingService
             throw new InvalidOperationException($"Bet {bet.Id} has invalid status {bet.Status} for processing");
         }
 
+        // Simulate processing delay (as per requirements)
         await Task.Delay(50);
 
+        // Update bet status with random result
         bet.UpdateStatus(SimulateRandomResult());
 
+        // Save bet to database
         await _betRepository.AddAsync(bet);
+    }
 
-        Interlocked.Increment(ref _totalBetsProcessed);
+    public async Task<BetSummary> GetSummaryAsync()
+    {
+        // Get optimized summary data from repository
+        var basicStats = await _betRepository.GetBasicStatsAsync();
+        var topProfits = await _betRepository.GetTopClientsWithProfitsAsync(take: 10);
+        var topLosses = await _betRepository.GetTopClientsWithLossesAsync(take: 10);
+
+        return new BetSummary
+        {
+            TotalBets = basicStats.TotalProcessed,
+            TotalAmount = (decimal)basicStats.TotalAmount,
+            TotalWinnings = (decimal)basicStats.TotalProfitLoss,
+            TopClientsByProfit = topProfits.Select(p => new ClientProfitInfo 
+            { 
+                Client = p.Client, 
+                TotalProfit = (decimal)p.Profit 
+            }).ToList(),
+            TopClientsByLoss = topLosses.Select(l => new ClientLossInfo 
+            { 
+                Client = l.Client, 
+                TotalLoss = (decimal)l.Loss 
+            }).ToList()
+        };
+    }
+
+    public void CompleteProcessing()
+    {
+        _channelService.CompleteAdding();
     }
 
     private static BetStatus SimulateRandomResult()

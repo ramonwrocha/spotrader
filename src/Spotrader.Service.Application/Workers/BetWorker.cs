@@ -1,44 +1,47 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Spotrader.Service.Application.Interfaces;
-using Spotrader.Service.Domain.Entities;
-using Spotrader.Service.Domain.Interfaces.Queue;
+using Spotrader.Service.Application.Services;
 
 namespace Spotrader.Service.Application.Workers;
 
 public class BetWorker : BackgroundService
 {
-    private readonly IBetQueue _betQueue;
-    private readonly IBetProcessingService _betProcessingService;
+    private readonly ILogger<BetWorker> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IBetChannelService _channelService;
 
     public BetWorker(
-        IBetQueue betQueue,
-        IBetProcessingService betProcessingService)
+        ILogger<BetWorker> logger,
+        IServiceScopeFactory scopeFactory,
+        IBetChannelService channelService)
     {
-        _betQueue = betQueue;
-        _betProcessingService = betProcessingService;
+        _logger = logger;
+        _scopeFactory = scopeFactory;
+        _channelService = channelService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        _logger.LogInformation("BetWorker started");
+
+        await foreach (var bet in _channelService.Reader.ReadAllAsync(stoppingToken))
         {
+            using var scope = _scopeFactory.CreateScope();
+            var betProcessingService = scope.ServiceProvider.GetRequiredService<BetProcessingService>();
+
             try
             {
-                var bet = await _betQueue.DequeueAsync(stoppingToken);
-
-                if (bet is not null)
-                {
-                    await _betProcessingService.ProcessBetAsync(bet);
-                }
+                await betProcessingService.ProcessBetAsync(bet);
+                _logger.LogInformation("Processed bet {BetId} for client {Client}", bet.Id, bet.Client);
             }
-            catch (OperationCanceledException)
+            catch (Exception ex)
             {
-                break;
-            }
-            catch
-            {
-                await Task.Delay(1000, stoppingToken);
+                _logger.LogError(ex, "Error processing bet {BetId}: {Error}", bet.Id, ex.Message);
             }
         }
+
+        _logger.LogInformation("BetWorker stopped");
     }
 }

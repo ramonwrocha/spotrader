@@ -10,7 +10,8 @@ public static class AplicationModule
 {
     public static void RegisterApplicationModule(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton<IBetChannelService, BetChannelService>();        
+        services.AddScoped<BetProcessingService>();        
         services.AddHostedService<BetWorker>();
-        services.AddScoped<IBetProcessingService, BetProcessingService>();
     }
 }

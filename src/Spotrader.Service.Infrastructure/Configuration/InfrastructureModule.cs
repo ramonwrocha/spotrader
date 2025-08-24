@@ -2,11 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Spotrader.Service.Domain.Interfaces.Queue;
 using Spotrader.Service.Domain.Interfaces.Repositories;
 using Spotrader.Service.Infrastructure.Data;
 using Spotrader.Service.Infrastructure.Data.Repositories;
-using Spotrader.Service.Infrastructure.Messaging.Queues;
 
 namespace Spotrader.Service.Infrastructure.Configuration;
 
@@ -16,7 +14,6 @@ public static class InfrastructureModule
     {
         services.RegisterSettings(configuration);
         services.RegisterDataServices();
-        services.RegisterMessagingServices();
     }
 
     public static async Task ApplyMigrationsAsync(this IServiceProvider serviceProvider)
@@ -32,11 +29,6 @@ public static class InfrastructureModule
             .BindConfiguration(PostgreSqlSettings.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-    }
-
-    private static void RegisterMessagingServices(this IServiceCollection services)
-    {
-        services.AddSingleton<IBetQueue, BetQueue>();
     }
 
     private static void RegisterDataServices(this IServiceCollection services)
