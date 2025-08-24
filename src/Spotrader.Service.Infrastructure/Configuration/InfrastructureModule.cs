@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Spotrader.Service.Domain.Interfaces.Repositories;
@@ -10,20 +9,21 @@ namespace Spotrader.Service.Infrastructure.Configuration;
 
 public static class InfrastructureModule
 {
-    public static void RegisterInfrastructureModule(this IServiceCollection services, IConfiguration configuration)
+    public static void RegisterInfrastructureModule(this IServiceCollection services)
     {
-        services.RegisterSettings(configuration);
+        services.RegisterSettings();
         services.RegisterDataServices();
+        services.RegisterRepositories();
     }
 
     public static async Task ApplyMigrationsAsync(this IServiceProvider serviceProvider)
     {
-        using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<SpotraderDbContext>();
+        var contextFactory = serviceProvider.GetRequiredService<IDbContextFactory<SpotraderDbContext>>();
+        using var context = await contextFactory.CreateDbContextAsync();
         await context.Database.MigrateAsync();
     }
 
-    private static void RegisterSettings(this IServiceCollection services, IConfiguration configuration)
+    private static void RegisterSettings(this IServiceCollection services)
     {
         services.AddOptions<PostgreSqlSettings>()
             .BindConfiguration(PostgreSqlSettings.SectionName)
@@ -33,7 +33,7 @@ public static class InfrastructureModule
 
     private static void RegisterDataServices(this IServiceCollection services)
     {
-        services.AddDbContext<SpotraderDbContext>((serviceProvider, options) =>
+        services.AddDbContextFactory<SpotraderDbContext>((serviceProvider, options) =>
         {
             var settings = serviceProvider.GetRequiredService<IOptions<PostgreSqlSettings>>();
 
@@ -45,8 +45,11 @@ public static class InfrastructureModule
                     errorCodesToAdd: null);
             });
         });
+    }
 
-        services.AddScoped<IBetRepository, BetRepository>();
-
+    private static IServiceCollection RegisterRepositories(this IServiceCollection services)
+    {
+        services.AddSingleton<IBetRepository, BetRepository>();
+        return services;
     }
 }

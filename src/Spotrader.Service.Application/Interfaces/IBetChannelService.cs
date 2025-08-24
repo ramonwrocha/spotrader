@@ -5,7 +5,13 @@ namespace Spotrader.Service.Application.Interfaces;
 
 public interface IBetChannelService
 {
-    ValueTask EnqueueAsync(Bet bet);
+    Task PublishAsync(Bet bet);
+    
+    Task PublishBatchAsync(IEnumerable<Bet> bets);
+
     ChannelReader<Bet> Reader { get; }
+    
+    ChannelReader<IEnumerable<Bet>> BatchReader { get; }
+
     void CompleteAdding();
 }

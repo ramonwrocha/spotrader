@@ -6,7 +6,9 @@ namespace Spotrader.Service.Application.Services;
 
 public class BetChannelService : IBetChannelService
 {
-    private readonly Channel<Bet> _channel;
+    private readonly Channel<Bet> _singleChannel;   
+    private readonly Channel<IEnumerable<Bet>> _batchChannel;
+
     private readonly ChannelWriter<Bet> _writer;
 
     public BetChannelService()
@@ -17,21 +19,32 @@ public class BetChannelService : IBetChannelService
             SingleWriter = false,
             AllowSynchronousContinuations = false
         };
-
-        _channel = Channel.CreateUnbounded<Bet>(options);
-        _writer = _channel.Writer;
+        
+        _singleChannel = Channel.CreateUnbounded<Bet>(options);
+        _writer = _singleChannel.Writer;
+        
+        _batchChannel = Channel.CreateUnbounded<IEnumerable<Bet>>(options); 
     }
 
-    public ChannelReader<Bet> Reader => _channel.Reader;
+    public ChannelReader<Bet> Reader => _singleChannel.Reader;
 
-    public async ValueTask EnqueueAsync(Bet bet)
-    {
-        ArgumentNullException.ThrowIfNull(bet);
-        await _writer.WriteAsync(bet);
-    }
+    public ChannelReader<IEnumerable<Bet>> BatchReader => _batchChannel.Reader;
 
     public void CompleteAdding()
     {
-        _writer.Complete();
+        _singleChannel.Writer.Complete();
+        _batchChannel.Writer.Complete();
+    }
+
+    public async Task PublishAsync(Bet bet)
+    {
+        ArgumentNullException.ThrowIfNull(bet);
+
+        await _writer.WriteAsync(bet);
+    }
+
+    public async Task PublishBatchAsync(IEnumerable<Bet> bets)
+    {
+        await _batchChannel.Writer.WriteAsync(bets);
     }
 }

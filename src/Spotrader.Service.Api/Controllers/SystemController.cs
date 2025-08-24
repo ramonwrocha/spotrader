@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Spotrader.Service.Api.Services;
+using Sportradar.Service.Worker.Services;
+using Spotrader.Service.Application.DTOs;
 using Spotrader.Service.Application.Interfaces;
 
 namespace Spotrader.Service.Api.Controllers;
@@ -22,34 +23,21 @@ public class SystemController : ControllerBase
         _dataSeedingService = dataSeedingService;
     }
 
-    [HttpPost("seed-data")]
-    public async Task<IActionResult> SeedData()
+    [HttpPost("seed-data/bets")]
+    public async Task<IActionResult> SeedData([FromQuery] SeedBetsParams param)
     {
-        try
-        {
-            await _dataSeedingService.SeedInitialBetsAsync();
-            return Ok(new { Message = "Successfully seeded 100 initial bets" });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { Error = "Failed to seed initial data" });
-        }
+        await _dataSeedingService.SeedInitialBetsAsync(totalBets: param.TotalBets);
+
+        return Ok(new { Message = $"Successfully seeded {param.TotalBets} initial bets" });
     }
 
     [HttpPost("shutdown")]
     public IActionResult ShutdownSystem()
     {
-        try
-        {
-            _channelService.CompleteAdding();
+        _channelService.CompleteAdding();
 
-            _applicationLifetime.StopApplication();
+        _applicationLifetime.StopApplication();
 
-            return Ok(new { Message = "System shutdown initiated" });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { Error = "Failed to initiate system shutdown" });
-        }
+        return Ok(new { Message = "System shutdown initiated" });
     }
 }

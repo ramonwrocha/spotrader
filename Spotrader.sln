@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spotrader.Service.Api", "sr
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{DCF2C2DB-3DCF-4E8D-8A7E-B3C4B7B7B7B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sportradar.Service.Worker", "src\Sportradar.Service.Worker\Sportradar.Service.Worker.csproj", "{E1B72B37-8E63-45D7-8859-8669B71464EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{DCF2C2DB-3DCF-4E8D-8A7E-B3C4B7B7B7B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCF2C2DB-3DCF-4E8D-8A7E-B3C4B7B7B7B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCF2C2DB-3DCF-4E8D-8A7E-B3C4B7B7B7B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1B72B37-8E63-45D7-8859-8669B71464EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1B72B37-8E63-45D7-8859-8669B71464EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1B72B37-8E63-45D7-8859-8669B71464EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1B72B37-8E63-45D7-8859-8669B71464EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,6 +86,7 @@ Global
 		{C50BF36C-A78E-4355-ADA1-B8DF9D6E7D7A} = {E5310379-8072-43A0-88A6-DC01A805EBA9}
 		{99C88DD8-31FC-45C3-8DF3-4AA908A48C88} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{DCF2C2DB-3DCF-4E8D-8A7E-B3C4B7B7B7B7} = {32AD90F0-424B-4F74-8DC1-65704C844BC8}
+		{E1B72B37-8E63-45D7-8859-8669B71464EF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4A51C969-4D8B-4FE9-8A0D-12B2D5427CC4}

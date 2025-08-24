@@ -1,8 +1,7 @@
-﻿using Sportradar.Service.Worker.Services;
+﻿using Spotrader.Service.Infrastructure.Configuration;
 using Spotrader.Service.Application.Configuration;
-using Spotrader.Service.Infrastructure.Configuration;
 
-namespace Spotrader.Service.Api.DependencyInjection;
+namespace Sportradar.Service.Worker.DependencyInjection;
 
 public static class IoCConfig
 {
@@ -10,6 +9,5 @@ public static class IoCConfig
     {
         services.RegisterInfrastructureModule();
         services.RegisterApplicationModule();
-        services.AddSingleton<DataSeedingService>();
     }
 }

@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Spotrader.Service.Application.DTOs;
+using Spotrader.Service.Application.Interfaces;
 using Spotrader.Service.Application.Services;
 using Spotrader.Service.Domain.Entities;
 
@@ -9,9 +10,9 @@ namespace Spotrader.Service.Api.Controllers;
 [Route("api/[controller]")]
 public class BetsController : ControllerBase
 {
-    private readonly BetProcessingService _betProcessingService;
+    private readonly IBetProcessingService _betProcessingService;
 
-    public BetsController(BetProcessingService betProcessingService)
+    public BetsController(IBetProcessingService betProcessingService)
     {
         _betProcessingService = betProcessingService;
     }
@@ -19,14 +20,7 @@ public class BetsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AddBet([FromBody] CreateBetRequest request)
     {
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var bet = Bet.Create(
+        var bet = Bet.Create(
                 request.Amount,
                 request.Odds,
                 request.Client,
@@ -34,27 +28,24 @@ public class BetsController : ControllerBase
                 request.Market,
                 request.Selection);
 
-            await _betProcessingService.AddBetAsync(bet);
+        await _betProcessingService.ProcessBetAsync(bet);
 
-            return Ok(new { BetId = bet.Id, Message = "Bet queued for processing" });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { Error = "Failed to queue bet for processing" });
-        }
+        return Ok();
     }
 
     [HttpGet("summary")]
     public async Task<IActionResult> GetSummary()
     {
-        try
-        {
-            var summary = await _betProcessingService.GetSummaryAsync();
-            return Ok(summary);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new { Error = "Failed to retrieve system summary" });
-        }
+        var summary = await _betProcessingService.GetSummaryAsync();
+
+        return Ok(summary);
+    }
+
+    [HttpPost("shutdown")]
+    public IActionResult Shutdown()
+    {
+        _betProcessingService.CompleteProcessing();
+
+        return Ok("System shutdown initiated");
     }
 }

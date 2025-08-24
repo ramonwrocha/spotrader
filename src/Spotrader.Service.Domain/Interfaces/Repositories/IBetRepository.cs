@@ -9,6 +9,8 @@ public interface IBetRepository
 
     Task AddAsync(Bet bet);
 
+    Task AddRangeAsync(IEnumerable<Bet> bets);
+
     Task<BasicStatsDto> GetBasicStatsAsync();
 
     Task<List<ClientProfitDto>> GetTopClientsWithProfitsAsync(int take = 5);

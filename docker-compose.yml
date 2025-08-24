@@ -1,28 +1,37 @@
 services:
-  spotrader-service:
+  sportradar-worker:
     build:
       context: .
-      dockerfile: src/Spotrader.Service.Api/Dockerfile
-    container_name: spotrader-service
-    restart: unless-stopped
-    ports:
-      - "7100:80"
-      - "7101:443"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80;https://+:443
-      - PostgreSql__Host=postgres
-      - PostgreSql__Port=5432
-      - PostgreSql__Database=spotrader
-      - PostgreSql__Username=spotrader
-      - PostgreSql__Password=spotrader
-      - PathBase=/
+      dockerfile: src/Sportradar.Service.Worker/Dockerfile
     depends_on:
       postgres:
-        condition: service_healthy
-
+         condition: service_healthy
     networks:
-      - spotrader-service-network
+      - sportradar-service-network
+    healthcheck:
+      test: ["CMD", "echo", "healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sportradar-api:
+     build:
+       context: .
+       dockerfile: src/Spotrader.Service.Api/Dockerfile
+     container_name: spotrader-service
+     restart: unless-stopped
+     ports:
+       - "7100:80"
+       - "7101:443"
+     environment:
+       - ASPNETCORE_ENVIRONMENT=Development
+       - ASPNETCORE_URLS=http://+:80;https://+:443
+       - PathBase=/
+     depends_on:
+       sportradar-worker:
+         condition: service_healthy
+       postgres:
+         condition: service_healthy
 
   postgres:
     image: postgres:latest
@@ -35,7 +44,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - spotrader-service-network
+      - sportradar-service-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -57,10 +66,10 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - spotrader-service-network
+      - sportradar-service-network
 
 networks:
-  spotrader-service-network:
+  sportradar-service-network:
     driver: bridge
 
 volumes:

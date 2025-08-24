@@ -10,32 +10,42 @@ namespace Spotrader.Service.Infrastructure.Data.Repositories;
 
 public sealed class BetRepository : IBetRepository
 {
-    private readonly SpotraderDbContext _context;
+    private readonly IDbContextFactory<SpotraderDbContext> _contextFactory;
 
-    public BetRepository(SpotraderDbContext context)
+    public BetRepository(IDbContextFactory<SpotraderDbContext> contextFactory)
     {
-        _context = context;
+        _contextFactory = contextFactory;
     }
 
     public async Task<Bet?> GetByIdAsync(long id)
     {
-        var entity = await _context.Bets
-            .AsNoTracking()
-            .FirstOrDefaultAsync(b => b.Id == id);
-
+        using var context = await _contextFactory.CreateDbContextAsync();
+        var entity = await context.Bets.FindAsync(id);
         return entity?.ToDomain();
     }
 
     public async Task AddAsync(Bet bet)
     {
-        await _context.Bets.AddAsync(bet.ToEntity());
+        using var context = await _contextFactory.CreateDbContextAsync();
+        await context.Bets.AddAsync(bet.ToEntity());
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
+    }
+
+    public async Task AddRangeAsync(IEnumerable<Bet> bets)
+    {
+        using var context = await _contextFactory.CreateDbContextAsync();
+
+        await context.Bets.AddRangeAsync(bets.Select(bet => bet.ToEntity()));
+        
+        await context.SaveChangesAsync();
     }
 
     public async Task<BasicStatsDto> GetBasicStatsAsync()
     {
-        var processedBets = await _context.Bets
+        using var context = await _contextFactory.CreateDbContextAsync();
+
+        var processedBets = await context.Bets
             .Where(bet => bet.Status != BetStatus.OPEN)
             .Select(bet => new
             {
@@ -54,7 +64,9 @@ public sealed class BetRepository : IBetRepository
 
     public async Task<List<ClientProfitDto>> GetTopClientsWithProfitsAsync(int take = 5)
     {
-        return await _context.Bets
+        using var context = await _contextFactory.CreateDbContextAsync();
+
+        return await context.Bets
             .Where(b => b.Status != BetStatus.OPEN)
             .GroupBy(b => b.Client)
             .Select(g => new ClientProfitDto
@@ -70,7 +82,9 @@ public sealed class BetRepository : IBetRepository
 
     public async Task<List<ClientLossDto>> GetTopClientsWithLossesAsync(int take = 5)
     {
-        return await _context.Bets
+        using var context = await _contextFactory.CreateDbContextAsync();
+        
+        return await context.Bets
             .Where(b => b.Status != BetStatus.OPEN)
             .GroupBy(b => b.Client)
             .Select(g => new ClientLossDto

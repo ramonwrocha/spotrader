@@ -1,4 +1,6 @@
-﻿using Spotrader.Service.Application.DTOs;
+﻿using Microsoft.Extensions.Options;
+using Spotrader.Service.Application.Configuration;
+using Spotrader.Service.Application.DTOs;
 using Spotrader.Service.Application.Interfaces;
 using Spotrader.Service.Domain.Entities;
 using Spotrader.Service.Domain.Interfaces.Repositories;
@@ -6,26 +8,36 @@ using Spotrader.Service.Domain.ValueObjects;
 
 namespace Spotrader.Service.Application.Services;
 
-public class BetProcessingService
+public class BetProcessingService : IBetProcessingService
 {
     private readonly IBetRepository _betRepository;
     private readonly IBetChannelService _channelService;
-    private static readonly double WinnerThreshold = 0.45;
-    private static readonly double LoserThreshold = 0.90;
+    private readonly ApplicationSettings _settings;
 
     public BetProcessingService(
+        IOptions<ApplicationSettings> settings,
         IBetRepository betRepository,
         IBetChannelService channelService)
     {
         _betRepository = betRepository;
         _channelService = channelService;
+        _settings = settings.Value;
     }
 
     public async Task AddBetAsync(Bet bet)
     {
         ArgumentNullException.ThrowIfNull(bet);
         
-        await _channelService.EnqueueAsync(bet);
+        await _channelService.PublishAsync(bet);
+    }
+
+    public async Task AddBetBatchAsync(List<Bet> bets)
+    {
+        ArgumentNullException.ThrowIfNull(bets);
+
+        var publishTasks = bets.Select(_channelService.PublishAsync);
+
+        await Task.WhenAll(publishTasks);
     }
 
     public async Task ProcessBetAsync(Bet bet)
@@ -35,11 +47,35 @@ public class BetProcessingService
             throw new InvalidOperationException($"Bet {bet.Id} has invalid status {bet.Status} for processing");
         }
 
-        await Task.Delay(50);
+        await Task.Delay(_settings.ProcessingDelayMs);
 
         bet.UpdateStatus(SimulateRandomResult());
 
         await _betRepository.AddAsync(bet);
+    }
+
+    public async Task ProcessBetBatchAsync(IEnumerable<Bet> bets)
+    {
+        var processedBets = new List<Bet>(capacity: _settings.MaxBetBatchSize);
+
+        await Task.Delay(_settings.ProcessingDelayMs);
+
+        foreach (var bet in bets)
+        {
+            if (bet.Status != BetStatus.OPEN)
+            {
+                continue;
+            }
+
+            bet.UpdateStatus(SimulateRandomResult());
+
+            processedBets.Add(bet);
+        }
+
+        if (processedBets.Any())
+        {
+            await _betRepository.AddRangeAsync(processedBets);
+        }
     }
 
     public async Task<BetSummary> GetSummaryAsync()
@@ -71,20 +107,22 @@ public class BetProcessingService
         _channelService.CompleteAdding();
     }
 
-    private static BetStatus SimulateRandomResult()
+    private BetStatus SimulateRandomResult()
     {
         var random = Random.Shared.NextDouble();
 
-        if (random <= WinnerThreshold)
+        if (random <= _settings.WinnerThreshold)
         {
             return BetStatus.WINNER;
         }
 
-        if (random <= LoserThreshold)
+        if (random <= _settings.LoserThreshold)
         {
             return BetStatus.LOSER;
         }
 
         return BetStatus.VOID;
     }
+
+    
 }
