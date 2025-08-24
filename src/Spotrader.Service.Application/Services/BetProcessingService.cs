@@ -35,9 +35,7 @@ public class BetProcessingService : IBetProcessingService
     {
         ArgumentNullException.ThrowIfNull(bets);
 
-        var publishTasks = bets.Select(_channelService.PublishAsync);
-
-        await Task.WhenAll(publishTasks);
+        await _channelService.PublishBatchAsync(bets);
     }
 
     public async Task ProcessBetAsync(Bet bet)

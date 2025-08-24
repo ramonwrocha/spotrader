@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: src/Sportradar.Service.Worker/Dockerfile
+    container_name: spotrader-worker
     depends_on:
       postgres:
          condition: service_healthy
@@ -18,7 +19,7 @@ services:
      build:
        context: .
        dockerfile: src/Spotrader.Service.Api/Dockerfile
-     container_name: spotrader-service
+     container_name: spotrader-api
      restart: unless-stopped
      ports:
        - "7100:80"
@@ -32,6 +33,8 @@ services:
          condition: service_healthy
        postgres:
          condition: service_healthy
+     networks:
+       - sportradar-service-network    
 
   postgres:
     image: postgres:latest
