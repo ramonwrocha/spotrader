@@ -1,13 +1,13 @@
 using Spotrader.Service.Application.Interfaces;
 using Spotrader.Service.Domain.Entities;
 
-namespace Sportradar.Service.Worker.Services;
+namespace Spotrader.Service.Api.Services;
 
 public class DataSeedingService
 {
     private readonly IBetProcessingService _betProcessingService;
 
-    private readonly int _bathSize = 1000; // MaxBetBatchSize
+    private readonly int _batchSize = 1_000;
     private readonly int _threadsPerCpu = 2; // cantidad recomendado por MS
     private readonly int _minimalAmount = 100;
     private readonly int _maxThreadsCount = 30;
@@ -36,32 +36,47 @@ public class DataSeedingService
 
         var batches = bets
             .Select((bet, index) => new { bet, index })
-            .GroupBy(x => x.index / _bathSize)
+            .GroupBy(x => x.index / _batchSize)
             .Select(g => g.Select(x => x.bet).ToList())
             .ToList();
 
-        await Parallel.ForEachAsync(
-            source: batches,
-            parallelOptions: new ParallelOptions
-            {
-                MaxDegreeOfParallelism = OptimalThreadsCount()
-            },
-            body: async (batch, ct) =>
+        var optimalThreads = OptimalThreadsCount();
+
+        using var semaphore = new SemaphoreSlim(optimalThreads, optimalThreads);
+        
+        var tasks = batches.Select(async (batch, batchIndex) =>
+        {
+            await semaphore.WaitAsync();
+
+            try
             {
                 await _betProcessingService.AddBetBatchAsync(batch);
-            });
+            }
+            catch
+            {
+                throw;
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
+
+        await Task.WhenAll(tasks);
     }
 
     private int OptimalThreadsCount()
     {
-        return Math.Min(Environment.ProcessorCount * _threadsPerCpu, _maxThreadsCount);
+        var logicsCpus = Environment.ProcessorCount * _threadsPerCpu;
+
+        return Math.Min(logicsCpus, _maxThreadsCount);
     }
 
     private IEnumerable<Bet> GenerateBets(
         long totalBets, string[] clients, string[] events, string[] markets, string[] selections)
     {
         var random = new Random();
-        for (int i = 1; i <= totalBets; i++)
+        for (var i = 1; i <= totalBets; i++)
         {
             var amount = _minimalAmount + random.Next(0, 300);
 

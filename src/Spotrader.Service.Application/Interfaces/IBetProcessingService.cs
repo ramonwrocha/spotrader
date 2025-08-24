@@ -7,7 +7,7 @@ public interface IBetProcessingService
 {
     Task AddBetAsync(Bet bet);
 
-    Task AddBetBatchAsync(List<Bet> bets);
+    Task AddBetBatchAsync(IEnumerable<Bet> bets);
 
     Task ProcessBetAsync(Bet bet);
 

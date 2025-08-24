@@ -1,5 +1,5 @@
 services:
-  sportradar-worker:
+  sportradar-api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     volumes:

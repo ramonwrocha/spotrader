@@ -1,4 +1,4 @@
-﻿using Sportradar.Service.Worker.Services;
+﻿using Spotrader.Service.Api.Services;
 using Spotrader.Service.Application.Configuration;
 using Spotrader.Service.Infrastructure.Configuration;
 

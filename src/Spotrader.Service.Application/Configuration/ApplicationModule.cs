@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Spotrader.Service.Application.Interfaces;
 using Spotrader.Service.Application.Services;
+using Spotrader.Service.Application.Workers;
 
 namespace Spotrader.Service.Application.Configuration;
 
@@ -17,6 +18,8 @@ public static class ApplicationModule
     {
         services.AddSingleton<IBetChannelService, BetChannelService>();
         services.AddSingleton<IBetProcessingService, BetProcessingService>();
+
+        services.AddHostedService<BettingWorker>();
 
         return services;
     }

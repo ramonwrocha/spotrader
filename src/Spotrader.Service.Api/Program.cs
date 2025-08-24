@@ -1,4 +1,6 @@
 using Spotrader.Service.Api.DependencyInjection;
+using Spotrader.Service.Api.Workers;
+using Spotrader.Service.Infrastructure.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,5 +22,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapControllers();
+
+await app.Services.ApplyMigrationsAsync();
 
 await app.RunAsync();

@@ -1,20 +1,4 @@
 services:
-  sportradar-worker:
-    build:
-      context: .
-      dockerfile: src/Sportradar.Service.Worker/Dockerfile
-    container_name: spotrader-worker
-    depends_on:
-      postgres:
-         condition: service_healthy
-    networks:
-      - sportradar-service-network
-    healthcheck:
-      test: ["CMD", "echo", "healthy"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   sportradar-api:
      build:
        context: .
@@ -29,8 +13,6 @@ services:
        - ASPNETCORE_URLS=http://+:80;https://+:443
        - PathBase=/
      depends_on:
-       sportradar-worker:
-         condition: service_healthy
        postgres:
          condition: service_healthy
      networks:
@@ -38,12 +20,12 @@ services:
 
   postgres:
     image: postgres:latest
-    container_name: postgres
+    container_name: sportradar
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=spotrader
-      - POSTGRES_USER=spotrader
-      - POSTGRES_PASSWORD=spotrader
+      - POSTGRES_DB=sportradar
+      - POSTGRES_USER=sportradar
+      - POSTGRES_PASSWORD=sportradar
     ports:
       - "5432:5432"
     networks:
@@ -51,7 +33,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U spotrader"]
+      test: ["CMD-SHELL", "pg_isready -U sportradar"]
       interval: 10s
       timeout: 5s
       retries: 5

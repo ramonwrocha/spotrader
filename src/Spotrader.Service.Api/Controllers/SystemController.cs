@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Sportradar.Service.Worker.Services;
+using Spotrader.Service.Api.Services;
 using Spotrader.Service.Application.DTOs;
 using Spotrader.Service.Application.Interfaces;
 
@@ -23,7 +23,7 @@ public class SystemController : ControllerBase
         _dataSeedingService = dataSeedingService;
     }
 
-    [HttpPost("seed-data/bets")]
+    [HttpPost("seed-data-bets")]
     public async Task<IActionResult> SeedData([FromQuery] SeedBetsParams param)
     {
         await _dataSeedingService.SeedInitialBetsAsync(totalBets: param.TotalBets);

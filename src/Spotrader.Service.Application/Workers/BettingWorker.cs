@@ -1,6 +1,7 @@
+using Microsoft.Extensions.Hosting;
 using Spotrader.Service.Application.Interfaces;
 
-namespace Sportradar.Service.Worker.Workers;
+namespace Spotrader.Service.Application.Workers;
 
 public class BettingWorker : BackgroundService
 {

@@ -31,7 +31,7 @@ public class BetProcessingService : IBetProcessingService
         await _channelService.PublishAsync(bet);
     }
 
-    public async Task AddBetBatchAsync(List<Bet> bets)
+    public async Task AddBetBatchAsync(IEnumerable<Bet> bets)
     {
         ArgumentNullException.ThrowIfNull(bets);
 
