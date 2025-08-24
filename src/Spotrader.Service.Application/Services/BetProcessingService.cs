@@ -25,7 +25,6 @@ public class BetProcessingService
     {
         ArgumentNullException.ThrowIfNull(bet);
         
-        // Enqueue bet for background processing
         await _channelService.EnqueueAsync(bet);
     }
 
@@ -36,19 +35,15 @@ public class BetProcessingService
             throw new InvalidOperationException($"Bet {bet.Id} has invalid status {bet.Status} for processing");
         }
 
-        // Simulate processing delay (as per requirements)
         await Task.Delay(50);
 
-        // Update bet status with random result
         bet.UpdateStatus(SimulateRandomResult());
 
-        // Save bet to database
         await _betRepository.AddAsync(bet);
     }
 
     public async Task<BetSummary> GetSummaryAsync()
     {
-        // Get optimized summary data from repository
         var basicStats = await _betRepository.GetBasicStatsAsync();
         var topProfits = await _betRepository.GetTopClientsWithProfitsAsync(take: 10);
         var topLosses = await _betRepository.GetTopClientsWithLossesAsync(take: 10);
