@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Spotrader.Service.Application.Configuration;
-using Spotrader.Service.Application.DTOs;
+using Spotrader.Service.Application.Extensions;
 using Spotrader.Service.Application.Interfaces;
 using Spotrader.Service.Domain.Entities;
 using Spotrader.Service.Domain.Interfaces.Repositories;
 using Spotrader.Service.Domain.ValueObjects;
+using System.Text;
 
 namespace Spotrader.Service.Application.Services;
 
@@ -14,14 +16,18 @@ public class BetProcessingService : IBetProcessingService
     private readonly IBetChannelService _channelService;
     private readonly ApplicationSettings _settings;
 
+    private readonly ILogger<BetProcessingService> _logger;
+
     public BetProcessingService(
         IOptions<ApplicationSettings> settings,
         IBetRepository betRepository,
-        IBetChannelService channelService)
+        IBetChannelService channelService,
+        ILogger<BetProcessingService> logger)
     {
         _betRepository = betRepository;
         _channelService = channelService;
         _settings = settings.Value;
+        _logger = logger;
     }
 
     public async Task AddBetAsync(Bet bet)
@@ -38,7 +44,7 @@ public class BetProcessingService : IBetProcessingService
         await _channelService.PublishBatchAsync(bets);
     }
 
-    public async Task ProcessBetAsync(Bet bet, CancellationToken cancellationToken)
+    public async Task ProcessBetAsync(Bet bet)
     {
         if (bet.Status != BetStatus.OPEN)
         {
@@ -49,10 +55,10 @@ public class BetProcessingService : IBetProcessingService
 
         bet.UpdateStatus(SimulateRandomResult());
 
-        await _betRepository.AddAsync(bet, cancellationToken);
+        await _betRepository.AddAsync(bet);
     }
 
-    public async Task ProcessBetBatchAsync(IEnumerable<Bet> bets, CancellationToken cancellationToken)
+    public async Task ProcessBetBatchAsync(IEnumerable<Bet> bets)
     {
         var processedBets = new List<Bet>(capacity: _settings.MaxBetBatchSize);
 
@@ -72,37 +78,24 @@ public class BetProcessingService : IBetProcessingService
 
         if (processedBets.Any())
         {
-            await _betRepository.AddRangeAsync(processedBets, cancellationToken);
+            await _betRepository.AddRangeAsync(processedBets);
         }
     }
 
-    public async Task<BetSummary> GetSummaryAsync()
+    public async Task<string> GetSummaryAsync()
     {
         var basicStats = await _betRepository.GetBasicStatsAsync();
-        var topProfits = await _betRepository.GetTopClientsWithProfitsAsync(take: 10);
-        var topLosses = await _betRepository.GetTopClientsWithLossesAsync(take: 10);
+        var topProfits = await _betRepository.GetTopClientsWithProfitsAsync(take: 5);
+        var topLosses = await _betRepository.GetTopClientsWithLossesAsync(take: 5);
 
-        return new BetSummary
-        {
-            TotalBets = basicStats.TotalProcessed,
-            TotalAmount = (decimal)basicStats.TotalAmount,
-            TotalWinnings = (decimal)basicStats.TotalProfitLoss,
-            TopClientsByProfit = topProfits.Select(p => new ClientProfitInfo 
-            { 
-                Client = p.Client, 
-                TotalProfit = (decimal)p.Profit 
-            }).ToList(),
-            TopClientsByLoss = topLosses.Select(l => new ClientLossInfo 
-            { 
-                Client = l.Client, 
-                TotalLoss = (decimal)l.Loss 
-            }).ToList()
-        };
+        return basicStats.ToSummary(topProfits, topLosses);
     }
 
-    public void CompleteProcessing()
+    public async Task CompleteProcessingAsync()
     {
         _channelService.CompleteAdding();
+
+        await Task.CompletedTask;
     }
 
     private BetStatus SimulateRandomResult()

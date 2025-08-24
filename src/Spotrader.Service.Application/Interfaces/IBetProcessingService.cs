@@ -1,5 +1,4 @@
-﻿using Spotrader.Service.Application.DTOs;
-using Spotrader.Service.Domain.Entities;
+﻿using Spotrader.Service.Domain.Entities;
 
 namespace Spotrader.Service.Application.Interfaces;
 
@@ -9,11 +8,11 @@ public interface IBetProcessingService
 
     Task AddBetBatchAsync(IEnumerable<Bet> bets);
 
-    Task ProcessBetAsync(Bet bet, CancellationToken cancellationToken);
+    Task ProcessBetAsync(Bet bet);
 
-    Task ProcessBetBatchAsync(IEnumerable<Bet> bets, CancellationToken cancellationToken);
+    Task ProcessBetBatchAsync(IEnumerable<Bet> bets);
 
-    Task<BetSummary> GetSummaryAsync();
+    Task<string> GetSummaryAsync();
 
-    void CompleteProcessing();
+    Task CompleteProcessingAsync();
 }

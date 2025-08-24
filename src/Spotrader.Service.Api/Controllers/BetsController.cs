@@ -40,12 +40,4 @@ public class BetsController : ControllerBase
 
         return Ok(summary);
     }
-
-    [HttpPost("shutdown")]
-    public IActionResult Shutdown()
-    {
-        _betProcessingService.CompleteProcessing();
-
-        return Ok("System shutdown initiated");
-    }
 }

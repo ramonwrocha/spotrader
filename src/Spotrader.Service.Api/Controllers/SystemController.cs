@@ -9,18 +9,18 @@ namespace Spotrader.Service.Api.Controllers;
 [Route("api/[controller]")]
 public class SystemController : ControllerBase
 {
-    private readonly IBetChannelService _channelService;
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly DataSeedingService _dataSeedingService;
+    private readonly IBetProcessingService _betProcessingService;
 
     public SystemController(
-        IBetChannelService channelService,
         IHostApplicationLifetime applicationLifetime,
-        DataSeedingService dataSeedingService)
+        DataSeedingService dataSeedingService,
+        IBetProcessingService betProcessingService)
     {
-        _channelService = channelService;
         _applicationLifetime = applicationLifetime;
         _dataSeedingService = dataSeedingService;
+        _betProcessingService = betProcessingService;
     }
 
     [HttpPost("seed-data-bets")]
@@ -34,8 +34,7 @@ public class SystemController : ControllerBase
     [HttpPost("shutdown")]
     public IActionResult ShutdownSystem()
     {
-        _channelService.CompleteAdding();
-
+        _betProcessingService.CompleteProcessingAsync();
         _applicationLifetime.StopApplication();
 
         return Ok(new { Message = "System shutdown initiated" });

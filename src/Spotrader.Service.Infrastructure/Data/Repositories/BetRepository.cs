@@ -24,77 +24,103 @@ public sealed class BetRepository : IBetRepository
         return entity?.ToDomain();
     }
 
-    public async Task AddAsync(Bet bet, CancellationToken cancellationToken)
+    public async Task AddAsync(Bet bet)
     {
         using var context = await _contextFactory.CreateDbContextAsync();
-        await context.Bets.AddAsync(bet.ToEntity(), cancellationToken);
+        await context.Bets.AddAsync(bet.ToEntity());
 
-        await context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync();
     }
 
-    public async Task AddRangeAsync(IEnumerable<Bet> bets, CancellationToken cancellationToken)
+    public async Task AddRangeAsync(IEnumerable<Bet> bets)
     {
         using var context = await _contextFactory.CreateDbContextAsync();
 
-        await context.Bets.AddRangeAsync(bets.Select(bet => bet.ToEntity()), cancellationToken);
+        await context.Bets.AddRangeAsync(bets.Select(bet => bet.ToEntity()));
 
-        await context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync();
     }
 
     public async Task<BasicStatsDto> GetBasicStatsAsync()
     {
         using var context = await _contextFactory.CreateDbContextAsync();
 
-        var processedBets = await context.Bets
-            .Where(bet => bet.Status != BetStatus.OPEN)
-            .Select(bet => new
+        var simpleStats = await context.Bets
+            .Where(b => b.Status != BetStatus.OPEN)
+            .GroupBy(b => 1)
+            .Select(g => new
             {
-                Amount = bet.Amount,
-                ProfitLoss = bet.CalculateProfitLoss()
+                TotalProcessed = g.Count(),
+                TotalAmount = g.Sum(b => b.Amount)
             })
+            .FirstOrDefaultAsync();
+
+        var profitLossData = await context.Bets
+            .Where(b => b.Status != BetStatus.OPEN)
+            .Select(b => new { b.Status, b.Amount, b.Odds })
             .ToListAsync();
+
+        var totalProfitLoss = profitLossData
+            .AsParallel()
+            .Sum(b => CalculateProfitLossStatic(b.Status, b.Amount, b.Odds));
 
         return new BasicStatsDto
         {
-            TotalProcessed = processedBets.Count,
-            TotalAmount = processedBets.Sum(x => x.Amount),
-            TotalProfitLoss = processedBets.Sum(x => x.ProfitLoss)
+            TotalProcessed = simpleStats?.TotalProcessed ?? 0,
+            TotalAmount = simpleStats?.TotalAmount ?? 0.0,
+            TotalProfitLoss = (double)totalProfitLoss
         };
     }
 
     public async Task<List<ClientProfitDto>> GetTopClientsWithProfitsAsync(int take = 5)
     {
-        using var context = await _contextFactory.CreateDbContextAsync();
-
-        return await context.Bets
-            .Where(b => b.Status != BetStatus.OPEN)
-            .GroupBy(b => b.Client)
-            .Select(g => new ClientProfitDto
-            {
-                Client = g.Key,
-                Profit = g.Sum(bet => bet.CalculateProfitLoss())
-            })
+        var clientProfits = await GetClientProfitsAsync();
+        
+        return clientProfits
             .Where(x => x.Profit > 0)
             .OrderByDescending(x => x.Profit)
             .Take(take)
-            .ToListAsync();
+            .ToList();
     }
 
     public async Task<List<ClientLossDto>> GetTopClientsWithLossesAsync(int take = 5)
     {
-        using var context = await _contextFactory.CreateDbContextAsync();
+        var clientProfits = await GetClientProfitsAsync();
         
-        return await context.Bets
-            .Where(b => b.Status != BetStatus.OPEN)
-            .GroupBy(b => b.Client)
-            .Select(g => new ClientLossDto
-            {
-                Client = g.Key,
-                Loss = g.Sum(bet => bet.CalculateProfitLoss())
-            })
-            .Where(x => x.Loss < 0)
+        return clientProfits
+            .Where(x => x.Profit < 0)
+            .Select(x => new ClientLossDto { Client = x.Client, Loss = x.Profit })
             .OrderBy(x => x.Loss)
             .Take(take)
+            .ToList();
+    }
+
+    private static decimal CalculateProfitLossStatic(BetStatus status, double amount, double odds)
+    {
+        return status switch
+        {
+            BetStatus.WINNER => (decimal)((amount * odds) - amount),
+            BetStatus.LOSER => -(decimal)amount,
+            _ => 0m
+        };
+    }
+    
+    private async Task<List<ClientProfitDto>> GetClientProfitsAsync()
+    {
+        using var context = await _contextFactory.CreateDbContextAsync();
+
+        var clientBetsData = await context.Bets
+            .Where(b => b.Status != BetStatus.OPEN)
+            .Select(b => new { b.Client, b.Status, b.Amount, b.Odds })
             .ToListAsync();
+
+        return clientBetsData
+            .GroupBy(b => b.Client)
+            .Select(g => new ClientProfitDto
+            {
+                Client = g.Key,
+                Profit = (double)g.Sum(bet => CalculateProfitLossStatic(bet.Status, bet.Amount, bet.Odds))
+            })
+            .ToList();
     }
 }
